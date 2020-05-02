@@ -3,7 +3,7 @@
 // =============== WEATHER_CONDITIONS ABSTRACT CLASS =============== //
 WeatherCondition* WeatherCondition::make(char type)
 {
-    WeatherCondition* p;
+    WeatherCondition* p = nullptr;
     if      ('z' == type)   p = new Storm();
     else if ('n' == type)   p = new Sunny();
     else if ('m' == type)   p = new Other();

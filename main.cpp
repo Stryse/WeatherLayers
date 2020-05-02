@@ -12,14 +12,15 @@
 #ifdef  NORMAL_MODE
 
 
-void printState(const std::vector<const Layer*>& v, std::ostream& os = std::cout)
+void printState(const std::vector<std::unique_ptr<Layer>>& v,const std::string& iteration = "kezdoallapot",std::ostream& os = std::cout)
 {
-    std::cout << "============== Legkor adatok ============" << std::endl;
-    std::cout << "Legretegek szama: " << v.size() << " db" << std::endl;
-    for(auto& layer : v)
+    os << "============== Legkor adatok " << iteration << " =============" << std::endl;
+    os << "Legretegek szama: " << v.size() << " db" << std::endl;
+    for(const auto& layer : v)
     {
         os << layer->getType() << "\t" << layer->getThickness() << std::endl; 
     }
+    os << "=======================================================" << std::endl;
 }
 
 bool getFile(/*out*/ std::ifstream& ifs, std::istream& is = std::cin)
@@ -35,7 +36,7 @@ bool getFile(/*out*/ std::ifstream& ifs, std::istream& is = std::cin)
     return true;
 }
 
-void create(std::istream& ifs,std::vector<Layer*>& layers, std::vector<WeatherCondition*>& conds)
+void create(std::istream& ifs,std::vector<std::unique_ptr<Layer>>& layers, std::vector<std::unique_ptr<WeatherCondition>>& conds)
 {
     // ============ Populating layers ============ //
     int layerCount; ifs >> layerCount;
@@ -53,6 +54,19 @@ void create(std::istream& ifs,std::vector<Layer*>& layers, std::vector<WeatherCo
         conds.emplace_back(WeatherCondition::make(c));
 }
 
+void transformLayers(std::vector<std::unique_ptr<Layer>>& layers,const WeatherCondition& cond)
+{
+    for(size_t i = 0; i < layers.size(); ++i)
+    {
+        std::unique_ptr<Layer> newL(layers[i]->transmute(cond)); 
+        if(newL)
+        {
+            layers.insert(layers.begin()+i,std::move(newL));
+            ++i;
+        }
+    }
+}
+
 int main()
 {
     // ============ GetFileName ============ //
@@ -60,25 +74,24 @@ int main()
     if(!getFile(ifs)) return 1;
 
     // ============ Main variables ============ //
-    std::vector<Layer*> layers;
-    std::vector<WeatherCondition*> conditions;
+    std::vector<std::unique_ptr<Layer>> layers;
+    std::vector<std::unique_ptr<WeatherCondition>> conditions;
 
     // ============ Reading data and populating main variables ============ //
     create(ifs,layers,conditions);
     ifs.close();
 
-    // ============ Simulation ============ //
-    for(size_t i = 0; i < layers.size(); ++i)
-    {
-        if(Layer* newL = layers[i]->transmute(*conditions[0]))
-        {
-            layers.insert(layers.begin()+i,newL);
-            ++i;
-        }
-    }
+    // ============ Print Start state ============ //
+    printState(layers);
 
-    for(auto& l : layers)
-        std::cout << l->getType() << "\t" << l->getThickness() << std::endl;
+    // ============ Simulation ============ //
+    for(size_t i = 0; i < 1; ++i) // TODO range based for
+    {
+        transformLayers(layers,*conditions[i]);
+        //mergeLayers(layers);
+        printState(layers,std::to_string(i+1) + std::string(".kor"));
+    }
+    
 }
 
 #else
