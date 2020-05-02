@@ -12,6 +12,8 @@
 #ifdef  NORMAL_MODE
 
 
+#define THICKNESS_LIMIT 0.5
+
 void printState(const std::vector<std::unique_ptr<Layer>>& v,const std::string& iteration = "kezdoallapot",std::ostream& os = std::cout)
 {
     os << "============== Legkor adatok " << iteration << " =============" << std::endl;
@@ -73,7 +75,10 @@ void mergeLayers(std::vector<std::unique_ptr<Layer>>& layers)
 {
     for(std::vector<std::unique_ptr<Layer>>::reverse_iterator it = layers.rbegin(); it != layers.rend(); it++)
     {
-        //if((*it)->)
+        if((*it)->getFromTransformation() || (*it)->getThickness() < THICKNESS_LIMIT)
+        {
+           
+        }
     }
 }
 
@@ -98,7 +103,7 @@ int main()
     for(size_t i = 0; i < 1; ++i) // TODO range based for
     {
         transformLayers(layers,*conditions[i]);
-        //mergeLayers(layers);
+        mergeLayers(layers);
         printState(layers,std::to_string(i+1) + std::string(".kor"));
     }
     

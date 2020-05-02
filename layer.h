@@ -23,6 +23,7 @@ public:
         /// ========== Getters ========== ///
         char getType() const { return type; }
         double getThickness() const { return thickness; }
+        bool getFromTransformation() const { return fromTransformation; }
 
 protected:
         char type;                  // Layer type eg. Ozone,Oxygen,CarbonDioxide
