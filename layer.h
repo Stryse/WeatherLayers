@@ -17,8 +17,7 @@ public:
         static Layer* make(char type, double thickness);
 
         /// ========== Pure virtual functions ========== ///
-        virtual void transmute(const WeatherCondition& condition) = 0;
-        virtual void merge(std::vector<Layer*>& layers) {}
+        virtual Layer* transmute(const WeatherCondition& condition) = 0;
 
         /// ========== Getters ========== ///
         char getType() const { return type; }
@@ -39,7 +38,7 @@ public:
         virtual ~Ozone() {}
 
         /// ========== Overrides ========== ///
-        void transmute(const WeatherCondition& condition) override;
+        Layer* transmute(const WeatherCondition& condition) override;
 };
 
 /// OXYGEN LAYER
@@ -51,7 +50,7 @@ public:
         virtual ~Oxygen() {}
 
         /// ========== Overrides ========== ///
-        void transmute(const WeatherCondition& condition) override;
+        Layer* transmute(const WeatherCondition& condition) override;
 };
 
 /// CARBON-DIOXIDE LAYER
@@ -63,7 +62,7 @@ public:
         virtual ~CarbonDioxide() {}
 
         /// ========== Overrides ========== ///
-        void transmute(const WeatherCondition& condition) override;
+        Layer* transmute(const WeatherCondition& condition) override;
 };
 
 #endif

@@ -3,6 +3,7 @@
 #include <memory>
 #include <fstream>
 #include <string>
+#include <cstdlib>
 
 #include "layer.h"
 #include "weather_cond.h"
@@ -10,52 +11,74 @@
 #define NORMAL_MODE
 #ifdef  NORMAL_MODE
 
-int main()
-{
-    std::string filePath;
-    std::cout << "Adja meg az input file nevet: "; std::cin >> filePath;
 
-    std::ifstream ifs(filePath);
+void printState(const std::vector<const Layer*>& v, std::ostream& os = std::cout)
+{
+    std::cout << "============== Legkor adatok ============" << std::endl;
+    std::cout << "Legretegek szama: " << v.size() << " db" << std::endl;
+    for(auto& layer : v)
+    {
+        os << layer->getType() << "\t" << layer->getThickness() << std::endl; 
+    }
+}
+
+bool getFile(/*out*/ std::ifstream& ifs, std::istream& is = std::cin)
+{
+    std::cout << "Adja meg az input file nevet: ";
+    std::string filePath; is >> filePath;
+    ifs.open(filePath);
     if(ifs.fail())
     {
         std::cerr << "Hiba tortent a \"" << filePath << "\" megnyitasakor." << std::endl;
-        return 1;
+        return false;
     }
-    
-    std::cout << "============== Legkor adatok ============" << std::endl;
+    return true;
+}
+
+void create(std::istream& ifs,std::vector<Layer*>& layers, std::vector<WeatherCondition*>& conds)
+{
     // ============ Populating layers ============ //
-    std::vector<Layer*> layers;
     int layerCount; ifs >> layerCount;
-    std::cout << "Legretegek szama: " << layerCount << " db" << std::endl;
-    std::cout << "Legretegek: " << std::endl;
     for(int i = 0; i < layerCount; ++i)
     {
         char layerType;
         double layerThickness;
         ifs >> layerType >> layerThickness;
         layers.emplace_back(Layer::make(layerType,layerThickness));
-
-        std::cout << layerType << "\t" << layerThickness << std::endl;
     }
 
     // ============ Populating atmosphere conditions ============ //
-    std::vector<WeatherCondition*> conditions;
     std::string conditionRawData; ifs >> conditionRawData;
-    std::cout << "Legkori viszonyok:" << std::endl;
     for(char c : conditionRawData)
-    {
-        conditions.emplace_back(WeatherCondition::make(c));
-        std::cout << c;
-    }
-    std::cout << std::endl << "=========================================" << std::endl;
+        conds.emplace_back(WeatherCondition::make(c));
+}
+
+int main()
+{
+    // ============ GetFileName ============ //
+    std::ifstream ifs;
+    if(!getFile(ifs)) return 1;
+
+    // ============ Main variables ============ //
+    std::vector<Layer*> layers;
+    std::vector<WeatherCondition*> conditions;
+
+    // ============ Reading data and populating main variables ============ //
+    create(ifs,layers,conditions);
     ifs.close();
 
+    // ============ Simulation ============ //
+    for(size_t i = 0; i < layers.size(); ++i)
+    {
+        if(Layer* newL = layers[i]->transmute(*conditions[0]))
+        {
+            layers.insert(layers.begin()+i,newL);
+            ++i;
+        }
+    }
 
     for(auto& l : layers)
-    {
-        l->transmute(*conditions[0]);
         std::cout << l->getType() << "\t" << l->getThickness() << std::endl;
-    }
 }
 
 #else

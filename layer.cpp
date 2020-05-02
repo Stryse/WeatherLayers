@@ -14,28 +14,25 @@ Layer* Layer::make(char type, double thickness)
 }
 
 /// ============== OZONE LAYER ============== ///
-void Ozone::transmute(const WeatherCondition& condition)
+Layer* Ozone::transmute(const WeatherCondition& condition)
 {
     Layer* newLayer = nullptr;
     condition.transformLayer(*this,*(&thickness),newLayer);
-    if(newLayer)
-        std::cout << newLayer->getType() << "\t" << newLayer->getThickness() << std::endl;
+    return newLayer;        
 }
 
 /// ============== OXYGEN LAYER ============== ///
-void Oxygen::transmute(const WeatherCondition& condition)
+Layer* Oxygen::transmute(const WeatherCondition& condition)
 {
     Layer* newLayer = nullptr;
     condition.transformLayer(*this,*(&thickness),newLayer);
-    if(newLayer)
-        std::cout << newLayer->getType() << "\t" << newLayer->getThickness() << std::endl;
+    return newLayer;
 }
 
 /// ============== CARBON DIOXIDE ============== ///
-void CarbonDioxide::transmute(const WeatherCondition& condition)
+Layer* CarbonDioxide::transmute(const WeatherCondition& condition)
 {
     Layer* newLayer = nullptr;
     condition.transformLayer(*this,*(&thickness),newLayer);
-    if(newLayer)
-        std::cout << newLayer->getType() << "\t" << newLayer->getThickness() << std::endl;
+    return newLayer;
 }
