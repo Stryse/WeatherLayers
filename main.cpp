@@ -67,6 +67,16 @@ void transformLayers(std::vector<std::unique_ptr<Layer>>& layers,const WeatherCo
     }
 }
 
+
+
+void mergeLayers(std::vector<std::unique_ptr<Layer>>& layers)
+{
+    for(std::vector<std::unique_ptr<Layer>>::reverse_iterator it = layers.rbegin(); it != layers.rend(); it++)
+    {
+        //if((*it)->)
+    }
+}
+
 int main()
 {
     // ============ GetFileName ============ //

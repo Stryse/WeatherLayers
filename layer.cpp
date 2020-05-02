@@ -4,12 +4,12 @@
 #include <iostream>
 
 /// ============== LAYER ABSTRACT CLASS ============== ///
-Layer* Layer::make(char type, double thickness)
+Layer* Layer::make(char type, double thickness, bool fromTransformation)
 {
     Layer* p = nullptr;
-    if      ('z' == type) p = new Ozone(thickness);
-    else if ('x' == type) p = new Oxygen(thickness);
-    else if ('s' == type) p = new CarbonDioxide(thickness);
+    if      ('z' == type) p = new Ozone(thickness,fromTransformation);
+    else if ('x' == type) p = new Oxygen(thickness,fromTransformation);
+    else if ('s' == type) p = new CarbonDioxide(thickness,fromTransformation);
     return p;
 }
 
