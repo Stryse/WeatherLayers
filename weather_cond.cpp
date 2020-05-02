@@ -1,5 +1,16 @@
 #include "weather_cond.h"
 
+// =============== WEATHER_CONDITIONS ABSTRACT CLASS =============== //
+WeatherCondition* WeatherCondition::make(char type)
+{
+    WeatherCondition* p;
+    if      ('z' == type)   p = new Storm();
+    else if ('n' == type)   p = new Sunny();
+    else if ('m' == type)   p = new Other();
+    
+    return p;
+}
+
 // =============== STORM =============== //
 void Storm::transformLayer(Ozone&,double&,Layer*&) const
 {}

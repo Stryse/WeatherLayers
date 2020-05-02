@@ -20,6 +20,10 @@ public:
         virtual void transmute(const WeatherCondition& condition) = 0;
         virtual void merge(std::vector<Layer*>& layers) {}
 
+        /// ========== Getters ========== ///
+        char getType() const { return type; }
+        double getThickness() const { return thickness; }
+
 protected:
         char type;          // Layer type eg. Ozone,Oxygen,CarbonDioxide
         double thickness;   // In Km

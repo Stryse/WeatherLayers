@@ -22,26 +22,40 @@ int main()
         return 1;
     }
     
+    std::cout << "============== Legkor adatok ============" << std::endl;
+    // ============ Populating layers ============ //
     std::vector<Layer*> layers;
-    // Populating layers
     int layerCount; ifs >> layerCount;
+    std::cout << "Legretegek szama: " << layerCount << " db" << std::endl;
+    std::cout << "Legretegek: " << std::endl;
     for(int i = 0; i < layerCount; ++i)
     {
         char layerType;
         double layerThickness;
         ifs >> layerType >> layerThickness;
         layers.emplace_back(Layer::make(layerType,layerThickness));
+
+        std::cout << layerType << "\t" << layerThickness << std::endl;
     }
 
+    // ============ Populating atmosphere conditions ============ //
     std::vector<WeatherCondition*> conditions;
-    // Populating atmosphere conditions
-    for(ifs.get(); !ifs.fail(); ifs.get())
+    std::string conditionRawData; ifs >> conditionRawData;
+    std::cout << "Legkori viszonyok:" << std::endl;
+    for(char c : conditionRawData)
     {
-
+        conditions.emplace_back(WeatherCondition::make(c));
+        std::cout << c;
     }
+    std::cout << std::endl << "=========================================" << std::endl;
     ifs.close();
 
-    
+
+    for(auto& l : layers)
+    {
+        l->transmute(*conditions[0]);
+        std::cout << l->getType() << "\t" << l->getThickness() << std::endl;
+    }
 }
 
 #else

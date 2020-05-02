@@ -1,6 +1,8 @@
 #include "layer.h"
 #include "weather_cond.h"
 
+#include <iostream>
+
 /// ============== LAYER ABSTRACT CLASS ============== ///
 Layer* Layer::make(char type, double thickness)
 {
@@ -16,6 +18,8 @@ void Ozone::transmute(const WeatherCondition& condition)
 {
     Layer* newLayer = nullptr;
     condition.transformLayer(*this,*(&thickness),newLayer);
+    if(newLayer)
+        std::cout << newLayer->getType() << "\t" << newLayer->getThickness() << std::endl;
 }
 
 /// ============== OXYGEN LAYER ============== ///
@@ -23,6 +27,8 @@ void Oxygen::transmute(const WeatherCondition& condition)
 {
     Layer* newLayer = nullptr;
     condition.transformLayer(*this,*(&thickness),newLayer);
+    if(newLayer)
+        std::cout << newLayer->getType() << "\t" << newLayer->getThickness() << std::endl;
 }
 
 /// ============== CARBON DIOXIDE ============== ///
@@ -30,4 +36,6 @@ void CarbonDioxide::transmute(const WeatherCondition& condition)
 {
     Layer* newLayer = nullptr;
     condition.transformLayer(*this,*(&thickness),newLayer);
+    if(newLayer)
+        std::cout << newLayer->getType() << "\t" << newLayer->getThickness() << std::endl;
 }
