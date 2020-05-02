@@ -17,6 +17,9 @@ public:
         /// ========== Factory function -- return subclass based on @parameter type ========== ///
         static Layer* make(char type, double thickness, bool fromTransformation = false);
 
+        /// ========== Non-Const Member function ========== ///
+        void merge(Layer* other);
+
         /// ========== Pure virtual functions ========== ///
         virtual Layer* transmute(const WeatherCondition& condition) = 0;
 

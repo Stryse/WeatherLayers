@@ -69,14 +69,35 @@ void transformLayers(std::vector<std::unique_ptr<Layer>>& layers,const WeatherCo
     }
 }
 
-
+std::unique_ptr<Layer>* findSameTypeAbove(std::vector<std::unique_ptr<Layer>>& layers,int start)
+{
+    for(int i = (start-1); i >= 0; --i)
+    {
+        if(layers[i]->getType() == layers[start]->getType())
+            return &(layers[i]);
+    }
+    return nullptr;
+}
 
 void mergeLayers(std::vector<std::unique_ptr<Layer>>& layers)
 {
-    for(std::vector<std::unique_ptr<Layer>>::reverse_iterator it = layers.rbegin(); it != layers.rend(); it++)
+    for(int i = (int)layers.size()-1; i >= 0;--i)
     {
-        if((*it)->getFromTransformation() || (*it)->getThickness() < THICKNESS_LIMIT)
+        std::cout << "ASD  " << i << std::endl << " " << layers[i] ->getType() << " " << layers[i]->getThickness() << std::endl;
+
+        if(layers[i]->getFromTransformation() || layers[i]->getThickness() < THICKNESS_LIMIT) // Merge if possible
         {
+           if(std::unique_ptr<Layer>* aboveSameLayer = findSameTypeAbove(layers,i)) // deleted inside merge
+           {
+               (*aboveSameLayer)->merge(layers[i].release());
+               layers.erase(layers.begin() + i);
+           }
+        //    else
+        //    {
+        //        std::vector<std::unique_ptr<Layer>>::iterator rem = layers.erase(layers.begin()+i);
+        //        layers.insert(layers.begin(),std::move(*rem));
+        //        ++i;
+        //    }
            
         }
     }
@@ -103,8 +124,9 @@ int main()
     for(size_t i = 0; i < 1; ++i) // TODO range based for
     {
         transformLayers(layers,*conditions[i]);
-        mergeLayers(layers);
         printState(layers,std::to_string(i+1) + std::string(".kor"));
+        mergeLayers(layers);
+        printState(layers,std::to_string(i+11) + std::string(".kor"));
     }
     
 }

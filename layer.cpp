@@ -13,6 +13,11 @@ Layer* Layer::make(char type, double thickness, bool fromTransformation)
     return p;
 }
 
+void Layer::merge(Layer* other)
+{
+    thickness += other->getThickness();
+    delete other;
+}
 /// ============== OZONE LAYER ============== ///
 Layer* Ozone::transmute(const WeatherCondition& condition)
 {
