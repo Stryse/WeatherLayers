@@ -4,14 +4,16 @@
 WeatherCondition* WeatherCondition::make(char type)
 {
     WeatherCondition* p = nullptr;
-    if      ('z' == type)   p = new Storm();
-    else if ('n' == type)   p = new Sunny();
-    else if ('m' == type)   p = new Other();
+    if      ('z' == type)   p = Storm::instance();
+    else if ('n' == type)   p = Sunny::instance();
+    else if ('m' == type)   p = Other::instance();
     
     return p;
 }
 
 // =============== STORM =============== //
+
+/// Overrides ///
 void Storm::transformLayer(Ozone&,double&,Layer*&) const
 {}
 
@@ -24,8 +26,24 @@ void Storm::transformLayer(Oxygen&,double& newThickness,Layer*& newLayer) const
 void Storm::transformLayer(CarbonDioxide&, double&,Layer*&) const
 {}
 
+/// Singleton related ///
+Storm* Storm::instance_ = nullptr;
+Storm* Storm::instance()
+{
+    if(instance_ == nullptr)
+        instance_ = new Storm();
+    
+    return instance_;
+}
+
+void Storm::destroy()
+{
+    if(instance_ == nullptr)
+        delete instance_;
+}
 // =============== Sunny =============== //
 
+/// Overrides ///
 void Sunny::transformLayer(Ozone&,double&,Layer*&) const
 {}
 
@@ -41,8 +59,24 @@ void Sunny::transformLayer(CarbonDioxide&, double& newThickness,Layer*& newLayer
     newThickness *= CarbonDioxideConstant;
 }
 
+/// Singleton related ///
+Sunny* Sunny::instance_ = nullptr;
+Sunny* Sunny::instance()
+{
+    if(instance_ == nullptr)
+        instance_ = new Sunny();
+    
+    return instance_;
+}
+
+void Sunny::destroy()
+{
+    if(instance_ == nullptr)
+        delete instance_;
+}
 // =============== Other =============== //
 
+/// Overrides ///
 void Other::transformLayer(Ozone&,double& newThickness,Layer*& newLayer) const
 {
     newLayer = new Oxygen((1-OzoneConstant) * newThickness,true);
@@ -57,3 +91,19 @@ void Other::transformLayer(Oxygen&,double& newThickness,Layer*& newLayer) const
 
 void Other::transformLayer(CarbonDioxide&, double&,Layer*&) const
 {}
+
+/// Singleton related ///
+Other* Other::instance_ = nullptr;
+Other* Other::instance()
+{
+    if(instance_ == nullptr)
+        instance_ = new Other();
+    
+    return instance_;
+}
+
+void Other::destroy()
+{
+    if(instance_ == nullptr)
+        delete instance_;
+}

@@ -3,6 +3,8 @@
 
 #include "layer.h"
 
+
+/// ================================ WEATHER_CONDITION ABSTRACT BASE CLASS ========================================== ///
 class WeatherCondition
 {
 public:
@@ -30,30 +32,59 @@ protected:
         const double CarbonDioxideConstant;
 };
 
+/// ================================ SINGLETON CLASS ========================================== ///
 class Storm : public WeatherCondition
 {
 public:
-        Storm() : WeatherCondition("Zivatar",1.0,0.5,1.0) { }
+        // Singleton Interface
+        static Storm* instance();
+        static void destroy();
+
+        // Overrides
+        virtual ~Storm() { }
         void transformLayer(Ozone&,double& newThickness,Layer*& newLayer) const override;
         void transformLayer(Oxygen&,double& newThickness,Layer*& newLayer) const override;
         void transformLayer(CarbonDioxide&,double& newThickness,Layer*& newLayer) const override;
+private:
+        Storm() : WeatherCondition("Zivatar",1.0,0.5,1.0) { }
+        static Storm* instance_;
 };
 
+/// ================================ SINGLETON CLASS ========================================== ///
 class Sunny : public WeatherCondition
 {
 public:
-        Sunny() : WeatherCondition("Napos",1.0,0.95,0.95) { }
+        // Singleton Interface
+        static Sunny* instance();
+        static void destroy();
+
+        // Overrides
+        virtual ~Sunny() { }
         void transformLayer(Ozone&,double& newThickness,Layer*& newLayer) const override;
         void transformLayer(Oxygen&,double& newThickness,Layer*& newLayer) const override;
         void transformLayer(CarbonDioxide&,double& newThickness,Layer*& newLayer) const override;
+
+private:
+        Sunny() : WeatherCondition("Napos",1.0,0.95,0.95) { }
+        static Sunny* instance_;
 };
 
+/// ================================ SINGLETON CLASS ========================================== ///
 class Other : public WeatherCondition
 {
 public:
-        Other() : WeatherCondition("Mas",0.95,0.9,1.0) { }
+        // Singleton Interface
+        static Other* instance();
+        static void destroy();
+
+        // Overrides
+        virtual ~Other() { }
         void transformLayer(Ozone&,double& newThickness,Layer*& newLayer) const override;
         void transformLayer(Oxygen&,double& newThickness,Layer*& newLayer) const override;
         void transformLayer(CarbonDioxide&,double& newThickness,Layer*& newLayer) const override;
+private:
+        Other() : WeatherCondition("Mas",0.95,0.9,1.0) { }
+        static Other* instance_;
+
 };
 #endif

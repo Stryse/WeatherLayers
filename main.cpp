@@ -39,7 +39,7 @@ bool getFile(/*out*/ std::ifstream& ifs, std::istream& is = std::cin)
 	return true;
 }
 
-void create(std::istream& ifs, std::vector<std::unique_ptr<Layer>>& layers, std::vector<std::unique_ptr<WeatherCondition>>& conds)
+void create(std::istream& ifs, std::vector<std::unique_ptr<Layer>>& layers, std::vector<WeatherCondition*>& conds)
 {
 	// ============ Populating layers ============ //
 	int layerCount; ifs >> layerCount;
@@ -128,7 +128,7 @@ int main()
 
 	// ============ Main variables ============ //
 	std::vector<std::unique_ptr<Layer>> layers;
-	std::vector<std::unique_ptr<WeatherCondition>> conditions;
+	std::vector<WeatherCondition*> conditions;
 
 	// ============ Reading data and populating main variables ============ //
 	create(ifs, layers, conditions);
@@ -164,6 +164,12 @@ int main()
         }
         ++loopRound;
 	}
+
+
+    // Destroying singletons
+    Storm::destroy();
+    Sunny::destroy();
+    Other::destroy();
 }
 
 #else
