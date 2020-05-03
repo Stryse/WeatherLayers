@@ -8,25 +8,25 @@
 class WeatherCondition
 {
 public:
-
-        // ============ Factory function -- return subclass based on @parameter type ============ //
-        static WeatherCondition* make(char type);
-
         // ============ Constructors, Destructor ============ //
         WeatherCondition(const char* type,double zConst, double xConst, double sConst)
                 :type(type),OzoneConstant(zConst),OxygenConstant(xConst), CarbonDioxideConstant(sConst)
         { } 
         virtual ~WeatherCondition() { }
 
+        // ============ Factory function -- return subclass based on @parameter type ============ //
+        static WeatherCondition* make(char type);
+
         // ============ Pure virtual functions ============ //
         virtual void transformLayer(Ozone&,double& newThickness,Layer*& newLayer) const = 0;
         virtual void transformLayer(Oxygen&,double& newThickness,Layer*& newLayer) const = 0;
         virtual void transformLayer(CarbonDioxide&,double& newThickness,Layer*& newLayer) const = 0;
 
-        // ============ public data ============= // 
-        const char* type;
+        // ============ Getter ============== //
+        const char* getType() { return type; }
 
 protected:
+        const char* type;
         const double OzoneConstant;
         const double OxygenConstant;
         const double CarbonDioxideConstant;

@@ -152,7 +152,7 @@ int main()
             // BEFORE MERGE
 		    printState(layers,
                         std::to_string((conditions.size() * loopRound) + (i + 1))
-                        + std::string(".kor - Osszeolvadas elott"),conditions[i]->type);
+                        + std::string(".kor - Osszeolvadas elott"),conditions[i]->getType());
 		    
             // MERGING
             mergeLayers(layers);
@@ -160,7 +160,7 @@ int main()
             // AFTER MERGE
 		    printState(layers,
                         std::to_string((conditions.size() * loopRound) + (i + 1)) 
-                        + std::string(".kor - Osszeolvadas utan"),conditions[i]->type);
+                        + std::string(".kor - Osszeolvadas utan"),conditions[i]->getType());
         }
         ++loopRound;
 	}

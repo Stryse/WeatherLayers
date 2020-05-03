@@ -31,7 +31,7 @@ public:
         bool getFromTransformation() const { return fromTransformation; }
 
 protected:
-        std::string type;                   // Layer type eg. Ozone,Oxygen,CarbonDioxide
+        std::string type;            // Layer type eg. Ozone,Oxygen,CarbonDioxide
         double thickness;            // In Km
         bool fromTransformation;     // Layer created from another layer's transformation
 };
