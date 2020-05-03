@@ -2,6 +2,7 @@
 #define LAYER__H
 
 #include <vector>
+#include <string>
 
 class WeatherCondition;
 
@@ -10,7 +11,7 @@ class Layer
 {
 public:
         /// ========== Constructor, Destructor ========== ///
-        explicit Layer(char type,double thickness, bool fromTransformation = false) 
+        explicit Layer(const std::string& type,double thickness, bool fromTransformation = false) 
             : type(type),thickness(thickness), fromTransformation(fromTransformation) {}
         virtual ~Layer() {}
 
@@ -25,12 +26,12 @@ public:
         virtual Layer* transmute(const WeatherCondition& condition) = 0;
 
         /// ========== Getters ========== ///
-        char getType() const { return type; }
+        std::string getType() const { return type; }
         double getThickness() const { return thickness; }
         bool getFromTransformation() const { return fromTransformation; }
 
 protected:
-        char type;                   // Layer type eg. Ozone,Oxygen,CarbonDioxide
+        std::string type;                   // Layer type eg. Ozone,Oxygen,CarbonDioxide
         double thickness;            // In Km
         bool fromTransformation;     // Layer created from another layer's transformation
 };
@@ -42,7 +43,7 @@ class Ozone : public Layer
 public:
         /// ========== Constructor, Destructor ========== ///
         Ozone(double thickness = 0.5, bool fromTransformation = false) 
-                : Layer('z',thickness,fromTransformation) { }
+                : Layer("Ozon",thickness,fromTransformation) { }
         virtual ~Ozone() {}
 
         /// ========== Overrides ========== ///
@@ -55,7 +56,7 @@ class Oxygen : public Layer
 public:
         /// ========== Constructor, Destructor ========== ///
         Oxygen(double thickness = 0.5, bool fromTransformation = false) 
-                : Layer('x',thickness,fromTransformation) { }
+                : Layer("Oxigen",thickness,fromTransformation) { }
         virtual ~Oxygen() {}
 
         /// ========== Overrides ========== ///
@@ -68,7 +69,7 @@ class CarbonDioxide : public Layer
 public:
         /// ========== Constructor, Destructor ========== ///
         CarbonDioxide(double thickness = 0.5, bool fromTransformation = false)
-                : Layer('s',thickness,fromTransformation) { }
+                : Layer("Szendioxid",thickness,fromTransformation) { }
         virtual ~CarbonDioxide() {}
 
         /// ========== Overrides ========== ///

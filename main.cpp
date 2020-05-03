@@ -3,7 +3,7 @@
 #include <memory>
 #include <fstream>
 #include <string>
-#include <cstdlib>
+#include <iomanip>
 
 #include "layer.h"
 #include "weather_cond.h"
@@ -20,9 +20,9 @@ void printState(const std::vector<std::unique_ptr<Layer>> & v, const std::string
 	os << "Legretegek szama: " << v.size() << " db" << std::endl;
 	for (const auto& layer : v)
 	{
-		os << layer->getType() << "\t" << layer->getThickness() << "\t" << (layer->getFromTransformation() ? "Friss" : "") << std::endl;
+		os << std::setw(17) << layer->getType() << std::setw(17) << layer->getThickness() << std::setw(10) << (layer->getFromTransformation() ? "Friss" : "") << std::endl;
 	}
-	os << "=======================================================" << std::endl;
+	os << "==================================================================================" << std::endl;
 }
 
 bool getFile(/*out*/ std::ifstream& ifs, std::istream& is = std::cin)
@@ -146,7 +146,7 @@ int main()
 	    for (size_t i = 0; i < conditions.size() && !simulationEnd(layers.size(),initLayerCount); ++i)
 	    {
 		    transformLayers(layers, *conditions[i]);
-		    //printState(layers, std::to_string((conditions.size() * loopRound) + (i + 1)) + std::string(".kor - Osszeolvadas elott"));
+		    printState(layers, std::to_string((conditions.size() * loopRound) + (i + 1)) + std::string(".kor - Osszeolvadas elott"));
 		    mergeLayers(layers);
 		    printState(layers,
                         std::to_string((conditions.size() * loopRound) + (i + 1)) 
