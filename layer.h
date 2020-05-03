@@ -18,7 +18,8 @@ public:
         static Layer* make(char type, double thickness, bool fromTransformation = false);
 
         /// ========== Non-Const Member function ========== ///
-        void merge(Layer* other);
+        void merge(Layer* other);    // Thickness of layers added
+        void solidify();             // Layer is no longer freshly transformed
 
         /// ========== Pure virtual functions ========== ///
         virtual Layer* transmute(const WeatherCondition& condition) = 0;
@@ -29,8 +30,8 @@ public:
         bool getFromTransformation() const { return fromTransformation; }
 
 protected:
-        char type;                  // Layer type eg. Ozone,Oxygen,CarbonDioxide
-        double thickness;           // In Km
+        char type;                   // Layer type eg. Ozone,Oxygen,CarbonDioxide
+        double thickness;            // In Km
         bool fromTransformation;     // Layer created from another layer's transformation
 };
 

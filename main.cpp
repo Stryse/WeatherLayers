@@ -11,9 +11,7 @@
 #define NORMAL_MODE
 #ifdef  NORMAL_MODE
 
-
 #define THICKNESS_LIMIT 0.5
-#define LOG_LAYER(layer) std::cout << layer->getType() << " " << layer->getThickness() << " " << layer->getFromTransformation() << std::endl
 
 
 void printState(const std::vector<std::unique_ptr<Layer>> & v, const std::string & iteration = "kezdoallapot", std::ostream & os = std::cout)
@@ -22,7 +20,7 @@ void printState(const std::vector<std::unique_ptr<Layer>> & v, const std::string
 	os << "Legretegek szama: " << v.size() << " db" << std::endl;
 	for (const auto& layer : v)
 	{
-		os << layer->getType() << "\t" << layer->getThickness() << "\t" << layer->getFromTransformation() << std::endl;
+		os << layer->getType() << "\t" << layer->getThickness() << "\t" << (layer->getFromTransformation() ? "Friss" : "") << std::endl;
 	}
 	os << "=======================================================" << std::endl;
 }
@@ -83,28 +81,42 @@ std::unique_ptr<Layer>* findSameTypeAbove(std::vector<std::unique_ptr<Layer>>& l
 
 void mergeLayers(std::vector<std::unique_ptr<Layer>>& layers)
 {
-	int e = 0;
+	int e = 0;	// Emerged layers
 	int v = (int)layers.size() - 1;
 	while (e <= v)
 	{
-		LOG_LAYER(layers[v]);
-		if (layers[v]->getFromTransformation() || layers[v]->getThickness() < THICKNESS_LIMIT) // Merge if possible
+		if (layers[v]->getFromTransformation() || layers[v]->getThickness() < THICKNESS_LIMIT)
 		{
-			if (std::unique_ptr<Layer> * aboveSameLayer = findSameTypeAbove(layers, v)) // deleted inside merge
+			if (std::unique_ptr<Layer> * aboveSameLayer = findSameTypeAbove(layers, v)) 
 			{
+				// Merge if there is layer above of same type
 				(*aboveSameLayer)->merge(layers[v].release());
 				layers.erase(layers.begin() + v);
 			}
 			else
 			{
-				std::unique_ptr<Layer> toReplace(std::move(*(layers.begin() + v)));
-				layers.erase(layers.begin() + v);
-				layers.insert(layers.begin(), std::move(toReplace));
-				++e; ++v;
+				if (layers[v]->getThickness() < THICKNESS_LIMIT)
+				{
+					// Dissipate if too thin
+					layers.erase(layers.begin() + v);
+				}
+				else
+				{
+					// Emerge to the top if thick enough
+					std::unique_ptr<Layer> toReplace(std::move(*(layers.begin() + v)));
+					layers.erase(layers.begin() + v);
+					layers.insert(layers.begin(), std::move(toReplace));
+					++e; ++v;
+				}
 			}
 		}
 		--v;
 	}
+}
+
+bool simulationEnd(int layersCount, int initLayersCount)
+{
+    return (layersCount >= initLayersCount * 3) || (layersCount < 3);
 }
 
 int main()
@@ -119,20 +131,29 @@ int main()
 
 	// ============ Reading data and populating main variables ============ //
 	create(ifs, layers, conditions);
+    int initLayerCount = layers.size();
+
 	ifs.close();
 
 	// ============ Print Start state ============ //
 	printState(layers);
 
 	// ============ Simulation ============ //
-	for (size_t i = 0; i < 1; ++i) // TODO range based for
-	{
-		transformLayers(layers, *conditions[i]);
-		printState(layers, std::to_string(i + 1) + std::string(".kor"));
-		mergeLayers(layers);
-		printState(layers, std::to_string(i + 11) + std::string(".kor"));
-	}
 
+    int loopRound = 0;
+    while(!simulationEnd(layers.size(),initLayerCount))
+    {
+	    for (size_t i = 0; i < conditions.size() && !simulationEnd(layers.size(),initLayerCount); ++i)
+	    {
+		    transformLayers(layers, *conditions[i]);
+		    //printState(layers, std::to_string((conditions.size() * loopRound) + (i + 1)) + std::string(".kor - Osszeolvadas elott"));
+		    mergeLayers(layers);
+		    printState(layers,
+                        std::to_string((conditions.size() * loopRound) + (i + 1)) 
+                        + std::string(".kor - Osszeolvadas utan"));
+        }
+        ++loopRound;
+	}
 }
 
 #else

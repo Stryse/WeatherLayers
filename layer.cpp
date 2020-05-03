@@ -18,6 +18,11 @@ void Layer::merge(Layer* other)
     thickness += other->getThickness();
     delete other;
 }
+
+void Layer::solidify()
+{
+    fromTransformation = false;
+}
 /// ============== OZONE LAYER ============== ///
 Layer* Ozone::transmute(const WeatherCondition& condition)
 {
