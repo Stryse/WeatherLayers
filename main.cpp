@@ -14,10 +14,11 @@
 #define THICKNESS_LIMIT 0.5
 
 
-void printState(const std::vector<std::unique_ptr<Layer>> & v, const std::string & iteration = "kezdoallapot", std::ostream & os = std::cout)
+void printState(const std::vector<std::unique_ptr<Layer>> & v,const std::string & iteration = "kezdoallapot",const std::string& condition = "",std::ostream & os = std::cout)
 {
-	os << "============== Legkor adatok " << iteration << " =============" << std::endl;
+	os << "==================== Legkor adatok " << iteration << " ==================" << std::endl << std::endl;
 	os << "Legretegek szama: " << v.size() << " db" << std::endl;
+    os << ((condition != "") ? (std::string("Idojaras viszony: ") + condition) : "") << std::endl << std::endl;  
 	for (const auto& layer : v)
 	{
 		os << std::setw(17) << layer->getType() << std::setw(17) << layer->getThickness() << std::setw(10) << (layer->getFromTransformation() ? "Friss" : "") << std::endl;
@@ -145,12 +146,21 @@ int main()
     {
 	    for (size_t i = 0; i < conditions.size() && !simulationEnd(layers.size(),initLayerCount); ++i)
 	    {
+            // TRANSFORMING
 		    transformLayers(layers, *conditions[i]);
-		    printState(layers, std::to_string((conditions.size() * loopRound) + (i + 1)) + std::string(".kor - Osszeolvadas elott"));
-		    mergeLayers(layers);
+
+            // BEFORE MERGE
+		    printState(layers,
+                        std::to_string((conditions.size() * loopRound) + (i + 1))
+                        + std::string(".kor - Osszeolvadas elott"),conditions[i]->type);
+		    
+            // MERGING
+            mergeLayers(layers);
+
+            // AFTER MERGE
 		    printState(layers,
                         std::to_string((conditions.size() * loopRound) + (i + 1)) 
-                        + std::string(".kor - Osszeolvadas utan"));
+                        + std::string(".kor - Osszeolvadas utan"),conditions[i]->type);
         }
         ++loopRound;
 	}
