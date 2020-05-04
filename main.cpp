@@ -8,11 +8,8 @@
 #include "layer.h"
 #include "weather_cond.h"
 
-#define NORMAL_MODE
-#ifdef  NORMAL_MODE
-
 #define THICKNESS_LIMIT 0.5
-
+#define NORMAL_MODE
 
 void printState(const std::vector<std::unique_ptr<Layer>> & v,const std::string & iteration = "kezdoallapot",const std::string& condition = "",std::ostream & os = std::cout)
 {
@@ -107,6 +104,7 @@ void mergeLayers(std::vector<std::unique_ptr<Layer>>& layers)
 					std::unique_ptr<Layer> toReplace(std::move(*(layers.begin() + v)));
 					layers.erase(layers.begin() + v);
 					layers.insert(layers.begin(), std::move(toReplace));
+					layers[0]->solidify();
 					++e; ++v;
 				}
 			}
@@ -120,6 +118,7 @@ bool simulationEnd(int layersCount, int initLayersCount)
     return (layersCount >= initLayersCount * 3) || (layersCount < 3);
 }
 
+#ifdef NORMAL_MODE
 int main()
 {
 	// ============ GetFileName ============ //
@@ -173,5 +172,367 @@ int main()
 }
 
 #else
-#include "tests.h"
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
+
+
+
+#define COMPARE_DOUBLES(A,B) ((A)-(B) < 1e-5f)
+TEST_CASE("Outer cycle, Conditions - count 0")
+{
+    std::ifstream ifs("../tests/Test01.txt");
+    if(ifs.fail()) FAIL();
+
+    std::vector<std::unique_ptr<Layer>> data;
+    std::vector<WeatherCondition*> conds;
+    create(ifs,data,conds);
+
+
+    for(size_t i = 0; i < conds.size(); ++i)
+    {
+        transformLayers(data,*conds[i]);
+		mergeLayers(data);
+    }
+
+	
+	CHECK(data[0]->getType() == "Ozon");
+	CHECK(COMPARE_DOUBLES(data[0]->getThickness(),5.0));
+	CHECK(data[0]->getFromTransformation() == false);
+
+	CHECK(data[1]->getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(data[1]->getThickness(),0.8));
+	CHECK(data[1]->getFromTransformation() == false);
+
+	CHECK(data[2]->getType() == "Szendioxid");
+	CHECK(COMPARE_DOUBLES(data[2]->getThickness(),3.0));
+	CHECK(data[2]->getFromTransformation() == false);
+
+	CHECK(data[3]->getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(data[3]->getThickness(),4));
+	CHECK(data[3]->getFromTransformation() == false);
+	
+}
+
+TEST_CASE("Outer cycle, Conditions - count 1")
+{
+    std::ifstream ifs("../tests/Test02.txt");
+    if(ifs.fail()) FAIL();
+
+    std::vector<std::unique_ptr<Layer>> data;
+    std::vector<WeatherCondition*> conds;
+    create(ifs,data,conds);
+
+
+    for(size_t i = 0; i < conds.size(); ++i)
+    {
+        transformLayers(data,*conds[i]);
+		mergeLayers(data);
+    }
+
+	CHECK(data[0]->getType() == "Ozon");
+	CHECK(COMPARE_DOUBLES(data[0]->getThickness(),4.75));
+	CHECK(data[0]->getFromTransformation() == false);
+
+	CHECK(data[1]->getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(data[1]->getThickness(),0.72));
+	CHECK(data[1]->getFromTransformation() == false);
+
+	CHECK(data[2]->getType() == "Szendioxid");
+	CHECK(COMPARE_DOUBLES(data[2]->getThickness(),3.4));
+	CHECK(data[2]->getFromTransformation() == false);
+
+	CHECK(data[3]->getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(data[3]->getThickness(),3.6));
+	CHECK(data[3]->getFromTransformation() == false);
+	
+}
+
+TEST_CASE("Outer cycle, Conditions - count 2")
+{
+    std::ifstream ifs("../tests/Test03.txt");
+    if(ifs.fail()) FAIL();
+
+    std::vector<std::unique_ptr<Layer>> data;
+    std::vector<WeatherCondition*> conds;
+    create(ifs,data,conds);
+
+
+    for(size_t i = 0; i < conds.size(); ++i)
+    {
+        transformLayers(data,*conds[i]);
+		mergeLayers(data);
+    }
+
+	CHECK(data[0]->getType() == "Ozon");
+	CHECK(COMPARE_DOUBLES(data[0]->getThickness(),6.91));
+	CHECK(data[0]->getFromTransformation() == false);
+
+	CHECK(data[1]->getType() == "Szendioxid");
+	CHECK(COMPARE_DOUBLES(data[1]->getThickness(),3.4));
+	CHECK(data[1]->getFromTransformation() == false);
+
+	CHECK(data[2]->getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(data[2]->getThickness(),1.8));
+	CHECK(data[2]->getFromTransformation() == false);
+	
+}
+
+TEST_CASE("Transmutation - Storm | Ozone")
+{
+	Ozone o(1.0);
+	Layer* newL = o.transmute(*Storm::instance());
+	CHECK(newL == nullptr);
+	CHECK(o.getType() == "Ozon");
+	CHECK(COMPARE_DOUBLES(o.getThickness(),1.0));
+	CHECK(o.getFromTransformation() == false);
+
+	Storm::destroy();
+}
+
+TEST_CASE("Transmutation - Storm | Oxygen")
+{
+	Oxygen o(1.0);
+	Layer* newL = o.transmute(*Storm::instance());
+	CHECK(newL->getType() == "Ozon");
+	CHECK(COMPARE_DOUBLES(newL->getThickness(),0.5));
+	CHECK(newL->getFromTransformation() == true);
+
+	CHECK(o.getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(o.getThickness(),0.5));
+	CHECK(o.getFromTransformation() == false);
+
+	delete newL;
+	Storm::destroy();
+}
+
+TEST_CASE("Transmutation - Storm | CarbonDioxide")
+{
+	CarbonDioxide o(1.0);
+	Layer* newL = o.transmute(*Storm::instance());
+	CHECK(newL == nullptr);
+
+	CHECK(o.getType() == "Szendioxid");
+	CHECK(COMPARE_DOUBLES(o.getThickness(),1.0));
+	CHECK(o.getFromTransformation() == false);
+
+	Storm::destroy();
+}
+
+TEST_CASE("Transmutation - Sunny | Ozone")
+{
+	Ozone o(1.0);
+	Layer* newL = o.transmute(*Sunny::instance());
+	CHECK(newL == nullptr);
+
+	CHECK(o.getType() == "Ozon");
+	CHECK(COMPARE_DOUBLES(o.getThickness(),1.0));
+	CHECK(o.getFromTransformation() == false);
+
+	Sunny::destroy();
+}
+
+TEST_CASE("Transmutation - Sunny | Oxygen")
+{
+	Oxygen o(1.0);
+	Layer* newL = o.transmute(*Sunny::instance());
+	CHECK(newL->getType() == "Ozon");
+	CHECK(COMPARE_DOUBLES(newL->getThickness(),0.05));
+	CHECK(newL->getFromTransformation() == true);
+
+	CHECK(o.getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(o.getThickness(),0.95));
+	CHECK(o.getFromTransformation() == false);
+
+	delete newL;
+	Sunny::destroy();
+}
+
+TEST_CASE("Transmutation - Sunny | CarbonDioxide")
+{
+	CarbonDioxide o(1.0);
+	Layer* newL = o.transmute(*Sunny::instance());
+	CHECK(newL->getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(newL->getThickness(),0.05));
+	CHECK(newL->getFromTransformation() == true);
+
+	CHECK(o.getType() == "Szendioxid");
+	CHECK(COMPARE_DOUBLES(o.getThickness(),0.95));
+	CHECK(o.getFromTransformation() == false);
+
+	delete newL;
+	Sunny::destroy();
+}
+
+TEST_CASE("Transmutation - Other | Ozone")
+{
+	Ozone o(1.0);
+	Layer* newL = o.transmute(*Other::instance());
+	CHECK(newL->getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(newL->getThickness(),0.05));
+	CHECK(newL->getFromTransformation() == true);
+
+	CHECK(o.getType() == "Ozon");
+	CHECK(COMPARE_DOUBLES(o.getThickness(),0.95));
+	CHECK(o.getFromTransformation() == false);
+
+	delete newL;
+	Other::destroy();
+}
+
+TEST_CASE("Transmutation - Other | Oxygen")
+{
+	Oxygen o(1.0);
+	Layer* newL = o.transmute(*Other::instance());
+	CHECK(newL->getType() == "Szendioxid");
+	CHECK(COMPARE_DOUBLES(newL->getThickness(),0.10));
+	CHECK(newL->getFromTransformation() == true);
+
+	CHECK(o.getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(o.getThickness(),0.90));
+	CHECK(o.getFromTransformation() == false);
+
+	delete newL;
+	Other::destroy();
+}
+
+TEST_CASE("Transmutation - Other | CarbonDioxide")
+{
+	CarbonDioxide o(1.0);
+	Layer* newL = o.transmute(*Other::instance());
+	CHECK(newL == nullptr);
+
+	CHECK(o.getType() == "Szendioxid");
+	CHECK(COMPARE_DOUBLES(o.getThickness(),1.0));
+	CHECK(o.getFromTransformation() == false);
+
+	delete newL;
+	Other::destroy();
+}
+
+TEST_CASE("Merging - There is same layer w > 0.5 freshTransformed")
+{
+	std::vector<std::unique_ptr<Layer>> data;
+	data.emplace_back(Layer::make('x',3.2));
+	data.emplace_back(Layer::make('z',4.6));
+	data.emplace_back(Layer::make('x',6.8,true));
+	data.emplace_back(Layer::make('s',10.0));
+
+	mergeLayers(data);
+
+	CHECK(data[0]->getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(data[0]->getThickness(),10.0));
+	CHECK(data[0]->getFromTransformation() == false);
+
+	CHECK(data[1]->getType() == "Ozon");
+	CHECK(COMPARE_DOUBLES(data[1]->getThickness(),4.6));
+	CHECK(data[1]->getFromTransformation() == false);
+
+	CHECK(data[2]->getType() == "Szendioxid");
+	CHECK(COMPARE_DOUBLES(data[2]->getThickness(),10.0));
+	CHECK(data[2]->getFromTransformation() == false);
+}
+
+TEST_CASE("Merging - There is same layer w < 0.5")
+{
+	std::vector<std::unique_ptr<Layer>> data;
+	data.emplace_back(Layer::make('x',3.2));
+	data.emplace_back(Layer::make('z',4.6));
+	data.emplace_back(Layer::make('x',0.3));
+	data.emplace_back(Layer::make('s',10.0));
+
+	mergeLayers(data);
+
+	CHECK(data[0]->getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(data[0]->getThickness(),3.5));
+	CHECK(data[0]->getFromTransformation() == false);
+
+	CHECK(data[1]->getType() == "Ozon");
+	CHECK(COMPARE_DOUBLES(data[1]->getThickness(),4.6));
+	CHECK(data[1]->getFromTransformation() == false);
+
+	CHECK(data[2]->getType() == "Szendioxid");
+	CHECK(COMPARE_DOUBLES(data[2]->getThickness(),10.0));
+	CHECK(data[2]->getFromTransformation() == false);
+}
+
+TEST_CASE("Merging - No same layer but all w > 0.5")
+{
+	std::vector<std::unique_ptr<Layer>> data;
+	data.emplace_back(Layer::make('x',3.2));
+	data.emplace_back(Layer::make('z',4.6));
+	data.emplace_back(Layer::make('s',10.0));
+
+	mergeLayers(data);
+
+	CHECK(data[0]->getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(data[0]->getThickness(),3.2));
+	CHECK(data[0]->getFromTransformation() == false);
+
+	CHECK(data[1]->getType() == "Ozon");
+	CHECK(COMPARE_DOUBLES(data[1]->getThickness(),4.6));
+	CHECK(data[1]->getFromTransformation() == false);
+
+	CHECK(data[2]->getType() == "Szendioxid");
+	CHECK(COMPARE_DOUBLES(data[2]->getThickness(),10.0));
+	CHECK(data[2]->getFromTransformation() == false);
+}
+
+TEST_CASE("Merging - No same layer but exist w < 0.5 - dissipates")
+{
+	std::vector<std::unique_ptr<Layer>> data;
+	data.emplace_back(Layer::make('x',3.2));
+	data.emplace_back(Layer::make('z',0.3));
+	data.emplace_back(Layer::make('s',10.0));
+
+	mergeLayers(data);
+
+	CHECK(data[0]->getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(data[0]->getThickness(),3.2));
+	CHECK(data[0]->getFromTransformation() == false);
+
+	CHECK(data[1]->getType() == "Szendioxid");
+	CHECK(COMPARE_DOUBLES(data[1]->getThickness(),10.0));
+	CHECK(data[1]->getFromTransformation() == false);
+}
+
+TEST_CASE("Merging - No same layer but exist w > 0.5 fresh - emerges")
+{
+	std::vector<std::unique_ptr<Layer>> data;
+	data.emplace_back(Layer::make('x',3.2));
+	data.emplace_back(Layer::make('z',5.5,true));
+	data.emplace_back(Layer::make('s',10.0));
+
+	mergeLayers(data);
+
+	CHECK(data[0]->getType() == "Ozon");
+	CHECK(COMPARE_DOUBLES(data[0]->getThickness(),5.5));
+	CHECK(data[0]->getFromTransformation() == false);
+
+	CHECK(data[1]->getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(data[1]->getThickness(),3.2));
+	CHECK(data[1]->getFromTransformation() == false);
+
+	CHECK(data[2]->getType() == "Szendioxid");
+	CHECK(COMPARE_DOUBLES(data[2]->getThickness(),10.0));
+	CHECK(data[2]->getFromTransformation() == false);
+}
+
+TEST_CASE("Merging - No same layer but exist w < 0.5 fresh - dissipates")
+{
+	std::vector<std::unique_ptr<Layer>> data;
+	data.emplace_back(Layer::make('x',3.2));
+	data.emplace_back(Layer::make('z',0.32,true));
+	data.emplace_back(Layer::make('s',10.0));
+
+	mergeLayers(data);
+
+	CHECK(data[0]->getType() == "Oxigen");
+	CHECK(COMPARE_DOUBLES(data[0]->getThickness(),3.2));
+	CHECK(data[0]->getFromTransformation() == false);
+
+	CHECK(data[1]->getType() == "Szendioxid");
+	CHECK(COMPARE_DOUBLES(data[1]->getThickness(),10.0));
+	CHECK(data[1]->getFromTransformation() == false);
+}
+
 #endif
